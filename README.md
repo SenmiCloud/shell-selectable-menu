@@ -18,6 +18,20 @@
 <img src="https://github.com/SenmiCloud/shell-selectable-menu/blob/main/assets/asset2.png?raw=true"/>
 
 <br><br>
+
+## Usage
+```bash
+Renders a keyboard navigable menu with a visual indicator of what's selected.
+
+  -h, --help               Displays this message
+  -t, --title              Menu title
+  -o, --options            An Array of options for a user to choose from
+  -d, --default            The initially selected index for the options
+  -m, --mutiple            Mulitple selection
+```
+
+<br><br>
+
 ## Example 1
 ```bash
 foodOptions=("pizza" "burgers" "chinese" "sushi" "thai" "italian" "shit")

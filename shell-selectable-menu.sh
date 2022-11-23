@@ -32,7 +32,9 @@ function clearLastMenu {
     echo -en "\033[${msgLineCount}A"
 
     # clear to end of screen to ensure there's no text left behind from previous input
-    [ $1 ] && tput ed
+    if [[ $1 ]]; then
+        tput ed
+    fi
 }
 
 # END - clearLastMenu
@@ -81,7 +83,9 @@ function renderMenu {
     menuStr="${menuStr}\n"
 
     # whether or not to overwrite the previous menu output
-    [ $4 ] && clearLastMenu
+    if [[ $4 ]]; then
+        clearLastMenu
+    fi
 
     printf "${menuStr}"
 }
@@ -285,7 +289,7 @@ function selectableMenu {
     # !NOTICE OLDIFS="$IFS" ; IFS=""，区别空格与回车，否则空格和回车都默认为 ""
     OLDIFS="$IFS" ; IFS=""
         while $captureInput; do
-            read -rsn1 key
+            read -rsn 1 key
             case "$key" in
 
                 # !NOTICE space
@@ -308,7 +312,6 @@ function selectableMenu {
                         currentItem=${currentItem//45;/42;}
                     fi
                     menuItems[$selectedIndex]=$currentItem
-
 
                     renderMenu "$instruction" $selectedIndex $maxViewable true
                     ;;
@@ -444,6 +447,7 @@ function selectableMenu {
             esac
         done
     IFS="${OLDIFS}"
+
 }
 
 # END - selectableMenu

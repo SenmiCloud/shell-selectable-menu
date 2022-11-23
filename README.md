@@ -4,6 +4,8 @@
 
 # shell selectable menu
 - Using keyboard `up|down` arrows to move the pointer.
+- Using keyboard `number` to select.
+- Using initial `*|!|#` to emphasise the row.
 - Supports `multiple` selection.
 - `A` to toggle all.
 - `Space` bar to select the current menu item.

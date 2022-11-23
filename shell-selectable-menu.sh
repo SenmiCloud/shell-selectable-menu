@@ -4,6 +4,8 @@ CHAR__RESET='\033[0m'
 menuStr=""
 returnOrExit=""
 
+# START - hideCursor
+
 function hideCursor {
     printf "\033[?25l"
 
@@ -11,10 +13,18 @@ function hideCursor {
     trap "showCursor && echo '' && ${returnOrExit} 0" SIGINT
 }
 
+# END - hideCursor
+
+# START - showCursor
+
 function showCursor {
     printf "\033[?25h"
     trap - SIGINT
 }
+
+# END - showCursor
+
+# START - clearLastMenu
 
 function clearLastMenu {
     local msgLineCount=$(printf "$menuStr" | wc -l)
@@ -25,6 +35,11 @@ function clearLastMenu {
     [ $1 ] && tput ed
 }
 
+# END - clearLastMenu
+
+# START - renderMenu
+
+unset menuItems
 function renderMenu {
 
     local start=0
@@ -34,16 +49,7 @@ function renderMenu {
     local listLength=$itemsLength
     local longest=0
     local spaces=""
-    menuStr="\n $instruction\n"
-
-    # Get the longest item from the list so that we know how many spaces to add
-    # to ensure there's no overlap from longer items when a list is scrolling up or down.
-    for (( i=0; i<$itemsLength; i++ )); do
-        if (( ${#menuItems[i]} > longest )); then
-        longest=${#menuItems[i]}
-        fi
-    done
-    spaces=$(printf ' %.0s' $(eval "echo {1.."$(($longest))"}"))
+    menuStr="\n   $instruction\n"
 
     if [ $3 -ne 0 ]; then
         listLength=$3
@@ -66,7 +72,8 @@ function renderMenu {
             selector=" "
         fi
 
-        currItem="${spaces:0:0}${currItem}${spaces:currItemLength}"
+        # currItem="${spaces:0:0}${currItem}${spaces:currItemLength}"
+        currItem="${currItem}"
 
         menuStr="${menuStr}\n ${selector} ${currItem}"
     done
@@ -78,6 +85,10 @@ function renderMenu {
 
     printf "${menuStr}"
 }
+
+# END - renderMenu
+
+# START - renderHelp
 
 function renderHelp {
     echo;
@@ -99,10 +110,14 @@ function renderHelp {
     echo "  selectableMenu -t \"What'd you like to have?\" -o foodOptions -m"
     echo "  echo \"You have selected:\""
     echo "  for (( i=0; i<\${#selectedNumberArray[@]}; i++ )); do"
-    echo "      echo \"\${selectedNumberArray[\$i]} \${foodOptions[\$((\${selectedNumberArray[$i]}-1))]}\""
+    echo "      echo \"\${selectedNumberArray[\$i]} \${foodOptions[\$((\${selectedNumberArray[\$i]}-1))]}\""
     echo "  done"
     echo;
 }
+
+# END - renderHelp
+
+# START - selectableMenu
 
 function selectableMenu {
 
@@ -146,7 +161,8 @@ function selectableMenu {
             shift
             ;;
         -d|--default)
-            selectedIndex=$(($2-1))
+            selectedIndex=$2
+            # selectedIndex=$(($2+1))
             shift 2
             ;;
         -m|--mutiple)
@@ -156,6 +172,7 @@ function selectableMenu {
         -o|--options)
             menuItems=$2[@]
             menuItems=("${!menuItems}")
+
             shift 2
             ;;
         -t|--title)
@@ -180,8 +197,77 @@ function selectableMenu {
 
     local itemsLength=${#menuItems[@]}
 
+    longest=0
+
+    unset newMenuItems
+    newMenuItems+=(" ")
     for (( i=0; i<$itemsLength; i++ )); do
-        menuItems[$i]="\033[1;32m ( ) ${menuItems[$i]} \033[0m"
+        newMenuItems+=("${menuItems[i]}")
+    done
+    newMenuItems+=(" ")
+
+    itemsLength=${#newMenuItems[@]}
+
+    unset menuItems
+    unset emphasis
+    for (( i=0; i<$itemsLength; i++ )); do
+
+        if [[ ${newMenuItems[i]} =~ ^\* ]]; then
+            emphasis+=(1)
+            menuItems[i]=${newMenuItems[i]/\*/}
+        elif [[ ${newMenuItems[i]} =~ ^\# ]]; then
+            emphasis+=(2)
+            menuItems[i]=${newMenuItems[i]/\#/}
+        elif [[ ${newMenuItems[i]} =~ ^\! ]]; then
+            emphasis+=(3)
+            menuItems[i]=${newMenuItems[i]/\!/}
+        else
+            emphasis+=(0)
+            menuItems[i]="${newMenuItems[i]}"
+        fi
+
+        currentMenuIemLengh=`echo "${menuItems[i]}" | wc -L`
+        if (( $currentMenuIemLengh > longest )); then
+            longest=$currentMenuIemLengh
+        fi
+    done
+    longest=$((longest+1))
+
+    spaces=$(printf ' %.0s' $(eval "echo {1.."$(($longest))"}"))
+    for (( i=0; i<$itemsLength; i++ )); do
+        currentLenght=`echo "${menuItems[i]}" | wc -L`
+        menuItems[i]=${menuItems[i]}${spaces:currentLenght}
+
+        case ${emphasis[i]} in
+            1)
+                if [[ $i != 0 ]] && [[ $i != $((itemsLength-1)) ]]; then
+                    menuItems[$i]="\033[41;1;37m [ ] ${menuItems[$i]} \033[0m"
+                else
+                    menuItems[$i]="\033[41;1;37m     ${menuItems[$i]} \033[0m"
+                fi
+                ;;
+            2)
+                if [[ $i != 0 ]] && [[ $i != $((itemsLength-1)) ]]; then
+                    menuItems[$i]="\033[44;1;31m [ ] ${menuItems[$i]} \033[0m"
+                else
+                    menuItems[$i]="\033[44;1;31m     ${menuItems[$i]} \033[0m"
+                fi
+                ;;
+            3)
+                if [[ $i != 0 ]] && [[ $i != $((itemsLength-1)) ]]; then
+                    menuItems[$i]="\033[40;1;37m [ ] ${menuItems[$i]} \033[0m"
+                else
+                    menuItems[$i]="\033[40;1;37m     ${menuItems[$i]} \033[0m"
+                fi
+                ;;
+            0)
+                if [[ $i != 0 ]] && [[ $i != $((itemsLength-1)) ]]; then
+                    menuItems[$i]="\033[45;1;37m [ ] ${menuItems[$i]} \033[0m"
+                else
+                    menuItems[$i]="\033[45;1;37m     ${menuItems[$i]} \033[0m"
+                fi
+                ;;
+        esac
     done
 
     # no menu items, at least 1 required
@@ -190,6 +276,9 @@ function selectableMenu {
         renderHelp
         $returnOrExit 1
     fi
+
+    availableLength=$((itemsLength-2))
+
 
     renderMenu "$instruction" $selectedIndex $maxViewable
     hideCursor
@@ -204,20 +293,20 @@ function selectableMenu {
                 " ")
                     currentItem=${menuItems[$selectedIndex]}
                     if [[ $ismultiple == 1 ]]; then
-                        if [[ $currentItem =~ "(*" ]]; then
-                            currentItem=${currentItem//\(\*/\( }
-                            currentItem=${currentItem//31m/32m}
+                        if [[ $currentItem =~ "[*" ]]; then
+                            currentItem=${currentItem//\[\*/\[ }
+                            currentItem=${currentItem//42;/45;}
                         else
-                            currentItem=${currentItem//\( \)/\(\*)}
-                            currentItem=${currentItem//32m/31m}
+                            currentItem=${currentItem//\[ \]/\[\*\]}
+                            currentItem=${currentItem//45;/42;}
                         fi
                     else
                         for (( i=0; i<$itemsLength; i++ )); do
-                            menuItems[$i]=${menuItems[$i]//\(\*/\( }
-                            menuItems[$i]=${menuItems[$i]//31m/32m}
+                            menuItems[$i]=${menuItems[$i]//\[\*/\[ }
+                            menuItems[$i]=${menuItems[$i]//42;/45;}
                         done
-                        currentItem=${currentItem//\( \)/\(\*)}
-                        currentItem=${currentItem//32m/31m}
+                        currentItem=${currentItem//\[ \]/\[\*\]}
+                        currentItem=${currentItem//45;/42;}
                     fi
                     menuItems[$selectedIndex]=$currentItem
 
@@ -230,12 +319,12 @@ function selectableMenu {
                     selectedNumber=""
                     unset selectedNumberArray
                     for (( i=0; i<$itemsLength; i++ )); do
-                        if [[ ${menuItems[$i]} =~ "(*" ]]; then
+                        if [[ ${menuItems[$i]} =~ "[*" ]]; then
                             if [[ $ismultiple == 0 ]]; then
-                                selectedNumber=$((i+1))
+                                selectedNumber=$i
                                 break
                             else
-                                selectedNumberArray+=($((i+1)))
+                                selectedNumberArray+=($i)
                             fi
                         fi
                     done
@@ -258,22 +347,26 @@ function selectableMenu {
                 # !NOTICE up | down arraow
                 "$KEY_ESCAPE")
 
-                    read -rsn 1 -t 1 key2
+                    read -rsn 1 key2
 
                     if [[ "$key2" == "[" ]]; then
-                        read -rsn 1 -t 1 key3
+                        read -rsn 1 key3
                             case "$key3" in
                                 "$KEY_ARROW_UP")
+
                                     selectedIndex=$((selectedIndex-1))
-                                    (( $selectedIndex < 0 )) && selectedIndex=$((itemsLength-1))
+                                    (( $selectedIndex < 1 )) && selectedIndex=$((itemsLength-1))
 
                                     renderMenu "$instruction" $selectedIndex $maxViewable true
                                     ;;
                                 "$KEY_ARROW_DOWN")
                                     selectedIndex=$((selectedIndex+1))
-                                    (( $selectedIndex == $itemsLength )) && selectedIndex=0
+                                    (( $selectedIndex == $((itemsLength-1)) )) && selectedIndex=1
 
                                     renderMenu "$instruction" $selectedIndex $maxViewable true
+                                    ;;
+                                *)
+                                    break
                                     ;;
                             esac
                     fi
@@ -283,15 +376,15 @@ function selectableMenu {
                 # !NOTICE toggle
                 a)
                     if [[ $ismultiple == 1 ]]; then
-                        if [[ ${menuItems[0]} =~ "(*" ]]; then
+                        if [[ ${menuItems[1]} =~ "[*" ]]; then
                             for (( i=0; i<$itemsLength; i++ )); do
-                                menuItems[$i]=${menuItems[$i]//\(\*/\( }
-                                menuItems[$i]=${menuItems[$i]//31m/32m}
+                                menuItems[$i]=${menuItems[$i]//\[\*/\[ }
+                                menuItems[$i]=${menuItems[$i]//42;/45;}
                             done
                         else
                             for (( i=0; i<$itemsLength; i++ )); do
-                                menuItems[$i]=${menuItems[$i]//\( \)/\(\*)}
-                                menuItems[$i]=${menuItems[$i]//32m/31m}
+                                menuItems[$i]=${menuItems[$i]//\[ \]/\[\*\]}
+                                menuItems[$i]=${menuItems[$i]//45;/42;}
                             done
                         fi
                         renderMenu "$instruction" $selectedIndex $maxViewable true
@@ -300,6 +393,51 @@ function selectableMenu {
                     continue
                     ;;
 
+                [1-9]*)
+
+                    if [[ $key -lt 1 ]] || [[ $key -gt $availableLength ]]; then
+                        continue
+                    fi
+
+                    combinedKey=$key
+                    isSecondKeyPressed=0
+
+                    if [[ $availableLength -ge 10 ]]; then
+                        read -rsn 1 -t 1 key5
+                        case "$key5" in
+                                [0-9]*)
+                                    isSecondKeyPressed=1
+                                    combinedKey="$key$key5"
+                                    ;;
+                                *)
+                                    ;;
+                            esac
+                    fi
+
+                    if [[ $combinedKey -le $availableLength ]]; then
+                        realIndex=$combinedKey
+                        currentItem=${menuItems[$realIndex]}
+                        if [[ $ismultiple == 1 ]]; then
+                            if [[ $currentItem =~ "[*" ]]; then
+                                currentItem=${currentItem//\[\*/\[ }
+                                currentItem=${currentItem//42;/45;}
+                            else
+                                currentItem=${currentItem//\[ \]/\[\*\]}
+                                currentItem=${currentItem//45;/42;}
+                            fi
+                        else
+                            for (( i=0; i<$itemsLength; i++ )); do
+                                menuItems[$i]=${menuItems[$i]//\[\*/\[ }
+                                menuItems[$i]=${menuItems[$i]//42;/45;}
+                            done
+                            currentItem=${currentItem//\[ \]/\[\*\]}
+                            currentItem=${currentItem//45;/42;}
+                        fi
+                        menuItems[$realIndex]=$currentItem
+                        renderMenu "$instruction" $selectedIndex $maxViewable true
+                    fi
+
+                    ;;
 
                 *)
                     continue
@@ -309,15 +447,5 @@ function selectableMenu {
     IFS="${OLDIFS}"
 }
 
+# END - selectableMenu
 
-# !NOTCIE examples
-foodOptions=("pizza" "burgers" "chinese" "sushi" "thai" "italian" "shit")
-
-selectableMenu -t "What'd you like to have?" -o foodOptions -d 3
-echo "You have selected: $selectedNumber ${foodOptions[$(($selectedNumber-1))]}"
-
-selectableMenu -t "What'd you like to have?" -o foodOptions -m
-echo "You have selected:"
-for (( i=0; i<${#selectedNumberArray[@]}; i++ )); do
-    echo "${selectedNumberArray[$i]} ${foodOptions[$((${selectedNumberArray[$i]}-1))]}"
-done

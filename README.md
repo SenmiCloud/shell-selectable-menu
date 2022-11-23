@@ -13,9 +13,9 @@
 <br><br>
 
 
-<img src="https://github.com/SenmiCloud/shell-selectable-menu/blob/main/assets/asset1.png?raw=true"/>
+<img src="https://github.com/SenmiCloud/shell-selectable-menu/blob/main/assets/asset1.gif?raw=true"/>
 <br>
-<img src="https://github.com/SenmiCloud/shell-selectable-menu/blob/main/assets/asset2.png?raw=true"/>
+<img src="https://github.com/SenmiCloud/shell-selectable-menu/blob/main/assets/asset2.gif?raw=true"/>
 
 <br><br>
 
@@ -34,21 +34,45 @@ Renders a keyboard navigable menu with a visual indicator of what's selected.
 
 ## Example 1
 ```bash
-foodOptions=("pizza" "burgers" "chinese" "sushi" "thai" "italian" "shit")
+index=1
+index0=1
+unset menuOptions
 
-selectableMenu -t "What'd you like to have?" -o foodOptions -d 3
+# use initial * # ! to emphasis
+menuOptions+=("*($((index0++)))  Open Gitea                           ($((index++)))  打开 Gitea")
+menuOptions+=("($((index0++)))  Open Consul                          ($((index++)))  打开 内服 Consul")
+menuOptions+=("#($((index0++)))  Open Grafana Log Panel               ($((index++)))  打开 内服 Log")
+menuOptions+=("($((index0++)))  Open Redis Insight                   ($((index++)))  打开 内服 Redis")
+menuOptions+=("!($((index0++)))  Test local pc web                    ($((index++)))  测试本机 网页")
+menuOptions+=("($((index0++)))  Test local pc web - quite            ($((index++)))  测试本机 网页 静默")
+menuOptions+=("($((index0++)))  Test office server web               ($((index++)))  测试内服 网页")
+menuOptions+=("($((index0++)))  Test office server web - quite       ($((index++)))  测试内服 网页 静默")
 
-echo "You have selected: $selectedNumber ${foodOptions[$(($selectedNumber-1))]}"
+# single
+selectableMenu -t "What'd you like to select?" -o menuOptions -d 3
+echo "You have selected $selectedNumber${menuOptions[$(($selectedNumber-1))]}"
 ```
 <br><br>
 ## Example 2
 ```bash
-foodOptions=("pizza" "burgers" "chinese" "sushi" "thai" "italian" "shit")
+index=1
+index0=1
+unset menuOptions
 
-selectableMenu -t "What'd you like to have?" -o foodOptions -m
+# use initial * # ! to emphasis
+menuOptions+=("*($((index0++)))  Open Gitea                           ($((index++)))  打开 Gitea")
+menuOptions+=("($((index0++)))  Open Consul                          ($((index++)))  打开 内服 Consul")
+menuOptions+=("#($((index0++)))  Open Grafana Log Panel               ($((index++)))  打开 内服 Log")
+menuOptions+=("($((index0++)))  Open Redis Insight                   ($((index++)))  打开 内服 Redis")
+menuOptions+=("!($((index0++)))  Test local pc web                    ($((index++)))  测试本机 网页")
+menuOptions+=("($((index0++)))  Test local pc web - quite            ($((index++)))  测试本机 网页 静默")
+menuOptions+=("($((index0++)))  Test office server web               ($((index++)))  测试内服 网页")
+menuOptions+=("($((index0++)))  Test office server web - quite       ($((index++)))  测试内服 网页 静默")
 
+# mulitple
+selectableMenu -t "What'd you like to select?" -o menuOptions -d 3 -m
 echo "You have selected:"
 for (( i=0; i<${#selectedNumberArray[@]}; i++ )); do
-    echo "${selectedNumberArray[$i]} ${foodOptions[$((${selectedNumberArray[$i]}-1))]}"
+    echo "${selectedNumberArray[$i]} ${menuOptions[$((${selectedNumberArray[$i]}-1))]}"
 done
 ```

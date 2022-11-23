@@ -162,7 +162,6 @@ function selectableMenu {
             ;;
         -d|--default)
             selectedIndex=$2
-            # selectedIndex=$(($2+1))
             shift 2
             ;;
         -m|--mutiple)
@@ -196,7 +195,7 @@ function selectableMenu {
     set -- "${remainingArgs[@]}"
 
     local itemsLength=${#menuItems[@]}
-
+    (( $selectedIndex == 0 )) && selectedIndex=1
     longest=0
 
     unset newMenuItems
@@ -355,7 +354,7 @@ function selectableMenu {
                                 "$KEY_ARROW_UP")
 
                                     selectedIndex=$((selectedIndex-1))
-                                    (( $selectedIndex < 1 )) && selectedIndex=$((itemsLength-1))
+                                    (( $selectedIndex < 1 )) && selectedIndex=$((itemsLength-2))
 
                                     renderMenu "$instruction" $selectedIndex $maxViewable true
                                     ;;

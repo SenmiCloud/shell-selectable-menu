@@ -113,7 +113,7 @@ function renderHelp {
     echo "  -d, --default            The initially selected index for the options"
     echo "  -m, --mutiple            Mulitple selection"
     echo "  -c, --confirm            Confirm after enter pressed"
-    echo "  -b, --background         Background color [blue|red|magenta|green|yellow|cyan|pink|grey|lightBlue|purple|black|nonde] - default is blue"
+    echo "  -b, --background         Background color [blue|red|magenta|green|yellow|cyan|pink|grey|lightBlue|purple|black|none] - default is blue"
     echo;
     echo "Example:"
     echo "  foodOptions=(\"pizza\" \"burgers\" \"chinese\" \"sushi\" \"thai\" \"italian\" \"shit\")"
@@ -272,6 +272,7 @@ function selectableMenu {
     unset menuItems
     unset emphasis
     unset confirmArray
+    local index=1
     for (( i=0; i<$itemsLength; i++ )); do
 
         if [[ ${newMenuItems[i]} =~ ^\? ]]; then
@@ -293,6 +294,14 @@ function selectableMenu {
         else
             emphasis+=(0)
             menuItems[i]="${newMenuItems[i]}"
+        fi
+
+        if [[ $i != 0 ]] && [[ $i != $((itemsLength-1)) ]]; then
+            if [[ $i -ge 10 ]] || [[ $itemsLength -lt 10 ]]; then
+                menuItems[i]="($((index++))) ${newMenuItems[i]}"
+            else
+                menuItems[i]="($((index++)))  ${newMenuItems[i]}"
+            fi
         fi
 
         currentMenuIemLengh=`echo "${menuItems[i]}" | wc -L`

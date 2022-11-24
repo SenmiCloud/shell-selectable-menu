@@ -397,7 +397,6 @@ function selectableMenu {
                             fi
                         fi
                     done
-
                     if [[ $ismultiple == 0 ]]; then
                         if [[ $selectedNumber == "" ]]; then
                             continue
@@ -415,7 +414,7 @@ function selectableMenu {
                                         break
                                         ;;
 
-                                    y|Y)
+                                    y|Y|"")
                                         confirmed=1
                                         break
                                         ;;
@@ -449,7 +448,7 @@ function selectableMenu {
                                         break
                                         ;;
 
-                                    y|Y)
+                                    y|Y|"")
                                         confirmed=1
                                         break
                                         ;;

@@ -28,8 +28,12 @@ Renders a keyboard navigable menu with a visual indicator of what's selected.
   -h, --help               Displays this message
   -t, --title              Menu title
   -o, --options            An Array of options for a user to choose from
+      initial with ? in single mode to confirm after enter pressed
+      initial with [#|!|*] to emphasize
   -d, --default            The initially selected index for the options
   -m, --mutiple            Mulitple selection
+  -c, --confirm            Confirm after enter pressed
+  -b, --background         Background color [blue|red|magenta|green|yellow|cyan|pink|grey|lightBlue|purple|black|nonde] - default is blue
 ```
 
 <br><br>
@@ -72,7 +76,7 @@ menuOptions+=("($((index0++)))  Test office server web               ($((index++
 menuOptions+=("($((index0++)))  Test office server web - quite       ($((index++)))  测试内服 网页 静默")
 
 # mulitple
-selectableMenu -t "What'd you like to select?" -o menuOptions -d 3 -m
+selectableMenu -t "What'd you like to select?" -o menuOptions -d 3 -m -b purple -c
 echo "You have selected:"
 for (( i=0; i<${#selectedNumberArray[@]}; i++ )); do
     echo "${selectedNumberArray[$i]} ${menuOptions[$((${selectedNumberArray[$i]}-1))]}"

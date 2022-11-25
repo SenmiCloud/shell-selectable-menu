@@ -272,6 +272,7 @@ function selectableMenu {
     unset menuItems
     unset emphasis
     unset confirmArray
+    unset lengthArray
     local index=1
     for (( i=0; i<$itemsLength; i++ )); do
 
@@ -305,6 +306,7 @@ function selectableMenu {
         fi
 
         currentMenuIemLengh=`echo "${menuItems[i]}" | wc -L`
+        lengthArray+=($currentMenuIemLengh)
         if (( $currentMenuIemLengh > longest )); then
             longest=$currentMenuIemLengh
         fi
@@ -313,8 +315,7 @@ function selectableMenu {
 
     spaces=$(printf ' %.0s' $(eval "echo {1.."$(($longest))"}"))
     for (( i=0; i<$itemsLength; i++ )); do
-        currentLenght=`echo "${menuItems[i]}" | wc -L`
-        menuItems[i]=${menuItems[i]}${spaces:currentLenght}
+        menuItems[i]=${menuItems[i]}${spaces:lengthArray[i]}
 
         case ${emphasis[i]} in
             1)

@@ -54,29 +54,26 @@ function renderMenu {
     local spaces=""
     menuStr="\n   $instruction\n"
 
-    if [ $3 -ne 0 ]; then
+    if [[ "$3" -ne 0 ]]; then
         listLength=$3
 
-        if [ $selectedIndex -ge $listLength ]; then
-        start=$(($selectedIndex+1-$listLength))
-        listLength=$(($selectedIndex+1))
+        if (( selectedIndex >= listLength )); then
+            start=$(( selectedIndex + 1 - listLength ))
+            listLength=$(( selectedIndex + 1))
         fi
     fi
 
-    for (( i=$start; i<$listLength; i++ )); do
+    for (( i = start; i < listLength; i++ )); do
         local currItem="${menuItems[i]}"
-        currItemLength=${#currItem}
 
-        if [[ $i = $selectedIndex ]]; then
-            currentSelection="${currItem}"
-            selector="${CHAR__RED}>${CHAR__RESET}"
-            currItem="${currItem}"
+        if (( i == selectedIndex )); then
+            selector=">"
         else
             selector=" "
         fi
 
         # currItem="${spaces:0:0}${currItem}${spaces:currItemLength}"
-        currItem="${currItem}"
+        # currItem="${currItem}"
 
         menuStr="${menuStr}\n ${selector} ${currItem}"
     done
@@ -257,12 +254,12 @@ function selectableMenu {
     set -- "${remainingArgs[@]}"
 
     local itemsLength=${#menuItems[@]}
-    (( $selectedIndex == 0 )) && selectedIndex=1
+    (( selectedIndex == 0 )) && selectedIndex=1
     longest=0
 
     unset newMenuItems
     newMenuItems+=(" ")
-    for (( i=0; i<$itemsLength; i++ )); do
+    for (( i = 0; i < itemsLength; i++ )); do
         newMenuItems+=("${menuItems[i]}")
     done
     newMenuItems+=(" ")
@@ -274,7 +271,7 @@ function selectableMenu {
     unset confirmArray
     unset lengthArray
     local index=1
-    for (( i=0; i<$itemsLength; i++ )); do
+    for (( i = 0; i < itemsLength; i++ )); do
 
         if [[ ${newMenuItems[i]} =~ ^\? ]]; then
             confirmArray+=(1)
@@ -299,22 +296,23 @@ function selectableMenu {
 
         if [[ $i != 0 ]] && [[ $i != $((itemsLength-1)) ]]; then
             if [[ $i -ge 10 ]] || [[ $itemsLength -lt 10 ]]; then
-                menuItems[i]="($((index++))) ${newMenuItems[i]}"
+                menuItems[i]="($((index++))) ${menuItems[i]}"
             else
-                menuItems[i]="($((index++)))  ${newMenuItems[i]}"
+                menuItems[i]="($((index++)))  ${menuItems[i]}"
             fi
         fi
 
         currentMenuIemLengh=`echo "${menuItems[i]}" | wc -L`
         lengthArray+=($currentMenuIemLengh)
-        if (( $currentMenuIemLengh > longest )); then
+        if (( currentMenuIemLengh > longest )); then
             longest=$currentMenuIemLengh
         fi
     done
     longest=$((longest+1))
 
     spaces=$(printf ' %.0s' $(eval "echo {1.."$(($longest))"}"))
-    for (( i=0; i<$itemsLength; i++ )); do
+    for (( i = 0; i < itemsLength; i++ )); do
+
         menuItems[i]=${menuItems[i]}${spaces:lengthArray[i]}
 
         case ${emphasis[i]} in
@@ -359,7 +357,6 @@ function selectableMenu {
 
     availableLength=$((itemsLength-2))
 
-
     renderMenu "$instruction" $selectedIndex $maxViewable
     hideCursor
 
@@ -381,7 +378,7 @@ function selectableMenu {
                             currentItem=${currentItem//$background/$selectedColor}
                         fi
                     else
-                        for (( i=0; i<$itemsLength; i++ )); do
+                        for (( i = 0; i < itemsLength; i++ )); do
                             menuItems[$i]=${menuItems[$i]//\[\*/\[ }
                             menuItems[$i]=${menuItems[$i]//$selectedColor/$background}
                         done
